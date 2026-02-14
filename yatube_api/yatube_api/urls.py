@@ -11,7 +11,7 @@ router.register('groups', GroupViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include(router.urls)),
-    path('api/v1/posts/<int:post_id>/comments/', 
+    path('api/v1/posts/<int:post_id>/comments/',
          CommentViewSet.as_view({
              'get': 'list',
              'post': 'create'

@@ -8,7 +8,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        
+
         return obj.author == request.user
 
 
@@ -35,7 +35,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         post_id = self.kwargs.get('post_id')
         if post_id:
             return Comment.objects.filter(post_id=post_id)
-        return Comment.objects.none()  
+        return Comment.objects.none()
 
     def perform_create(self, serializer):
         post_id = self.kwargs.get('post_id')
@@ -43,7 +43,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             post = Post.objects.get(id=post_id)
         except Post.DoesNotExist:
             raise PermissionDenied('Пост не найден')
-        
+
         serializer.save(
             author=self.request.user,
             post=post
@@ -52,7 +52,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         comment = self.get_object()
         if comment.author != self.request.user:
-            raise PermissionDenied('Вы можете редактировать только свои комментарии')
+            raise PermissionDenied(
+                'Вы можете редактировать только свои комментарии')
         serializer.save()
 
     def perform_destroy(self, instance):
