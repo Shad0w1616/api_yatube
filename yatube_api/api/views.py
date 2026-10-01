@@ -1,5 +1,6 @@
 from rest_framework import viewsets, permissions
 from rest_framework.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
 from posts.models import Post, Group, Comment
 from .serializers import PostSerializer, GroupSerializer, CommentSerializer
 
@@ -31,22 +32,17 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
+    def get_post(self):
+        return get_object_or_404(Post, id=self.kwargs.get('post_id'))
+
     def get_queryset(self):
-        post_id = self.kwargs.get('post_id')
-        if post_id:
-            return Comment.objects.filter(post_id=post_id)
-        return Comment.objects.none()
+        post = self.get_post()
+        return post.comments.all()
 
     def perform_create(self, serializer):
-        post_id = self.kwargs.get('post_id')
-        try:
-            post = Post.objects.get(id=post_id)
-        except Post.DoesNotExist:
-            raise PermissionDenied('Пост не найден')
-
         serializer.save(
             author=self.request.user,
-            post=post
+            post=self.get_post()
         )
 
     def perform_update(self, serializer):
